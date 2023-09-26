@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String            @id @default(uuid())
+  name            String
+  email           String            @unique
+  password        String
+  role            RoleType?         @default(CUSTOMER)
+  contactNo       String
+  address         String
+  profileImg      String
+  ReviewAndRating ReviewAndRating[]
+  Order           Order[]
+
+  @@map("user")
+}
+
+model Category {
+  id    String @id @default(uuid())
+  title String
+  Book  Book[]
+
+  @@map("category")
+}
+
+model Book {
+  id              String            @id @default(uuid())
+  title           String
+  author          String
+  price           String
+  genre           String
+  publicationDate String
+  categoryId      String
+  category        Category          @relation(fields: [categoryId], references: [id])
+  ReviewAndRating ReviewAndRating[]
+
+  @@map("book")
+}
+
+model ReviewAndRating {
+  id     String @id @default(uuid())
+  review String
+  rating String
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id])
+
+  @@map("review_and_rating")
+}
+
+model Order {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  orderedBooks Json
+  status       String   @default("pending")
+  createdAt    DateTime @default(now())
+
+  @@map("order")
+}
+
+enum RoleType {
+  ADMIN
+  CUSTOMER
+}
